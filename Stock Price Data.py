@@ -7,16 +7,17 @@ import pprint
 
 style.use('ggplot')
 
-start = str(dt.datetime(2019, 1, 1).date())
+start = str(dt.datetime(2010, 1, 1).date())
 end = str(dt.datetime.now().date())
 ticker = 'TSLA'
-time_period = 'monthly'
+time_period = 'daily'
 TSLA = YahooFinancials(ticker)
 
 fin_dict = TSLA.get_historical_price_data(start, end, time_period)
 df = pd.DataFrame(fin_dict[ticker]['prices'])
 
 df.set_index('formatted_date', inplace=True)
-df.drop(columns=['adjclose', 'date'], inplace=True)
+df.drop(columns=['date'], inplace=True)
 
-print(df)
+print(df.tail())
+df.to_csv('TSLA.csv')

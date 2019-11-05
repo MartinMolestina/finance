@@ -1,10 +1,14 @@
 import bs4 as bs
 import datetime as dt
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import style
 import os
 import pickle
 import requests
 from yahoofinancials import YahooFinancials
+
 
 def save_sp500_tickers():
     resp = requests.get('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
@@ -49,6 +53,7 @@ def get_data_from_yahoo(reload_sp500=False):
         except:
             pass
 
+
 def compile_data():
     with open("sp500tickers.pickle", "rb") as f:
         tickers = pickle.load(f)
@@ -80,7 +85,38 @@ def compile_data():
     main_df.to_csv('sp500_joined_closes.csv')
 
 
+def visualize_data():
+    style.use('ggplot')
+
+    df = pd.read_csv('sp500_joined_closes.csv')
+    df_corr = df.corr()
+    print(df_corr.head())
+    df_corr.to_csv('sp500corr.csv')
+
+    data1 = df_corr.values
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(111)
+
+    heatmap1 = ax1.pcolor(data1, cmap=plt.cm.RdYlGn)
+    fig1.colorbar(heatmap1)
+
+    ax1.set_xticks(np.arange(data1.shape[1]) + 0.5, minor=False)
+    ax1.set_yticks(np.arange(data1.shape[0]) + 0.5, minor=False)
+    ax1.invert_yaxis()
+    ax1.xaxis.tick_top()
+    column_labels = df_corr.columns
+    row_labels = df_corr.index
+    ax1.set_xticklabels(column_labels)
+    ax1.set_yticklabels(row_labels)
+    plt.xticks(rotation=90)
+    heatmap1.set_clim(-1,1)
+    plt.tight_layout()
+    plt.savefig("correlations.png", dpi = (300))
+    plt.show()
+
+
 
 #save_sp500_tickers()
 #get_data_from_yahoo()
-compile_data()
+#compile_data()
+visualize_data()

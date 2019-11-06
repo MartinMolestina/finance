@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import style
+from collections import Counter
 import os
 import pickle
 import requests
@@ -148,11 +149,54 @@ def process_data_for_labels(ticker):
     df.fillna(0, inplace=True)
     return tickers, df
 
+# Buy, Sell, Hold strategy
+def buy_sell_hold(*args):
+    cols = [c for c in args]
+    buy_threshold = 0.022
+    sell_threshold = -0.02
+    for col in cols:
+        if col > buy_threshold:
+            return 1
+        if col < sell_threshold:
+            return -1
+    return 0
+
+# Define features and targets
+def extract_featuresets(ticker):
+    tickers, df = process_data_for_labels(ticker)
+    df['{}_target'.format(ticker)] = list(map( buy_sell_hold,
+                                               df['{}_1d'.format(ticker)],
+                                               df['{}_2d'.format(ticker)],
+                                               df['{}_3d'.format(ticker)],
+                                               df['{}_4d'.format(ticker)],
+                                               df['{}_5d'.format(ticker)],
+                                               df['{}_6d'.format(ticker)],
+                                               df['{}_7d'.format(ticker)] ))
+
+    vals = df['{}_target'.format(ticker)].values.tolist()
+    str_vals = [str(i) for i in vals]
+    print('Data spread:',Counter(str_vals))
+
+    df.fillna(0, inplace=True)
+    df = df.replace([np.inf, -np.inf], np.nan)
+    df.dropna(inplace=True)
+
+    df_vals = df[[ticker for ticker in tickers]].pct_change()
+    df_vals = df_vals.replace([np.inf, -np.inf], 0)
+    df_vals.fillna(0, inplace=True)
+
+    X = df_vals.values
+    y = df['{}_target'.format(ticker)].values
+
+    return X,y,df
+
+
 
 # main calls each function
 if __name__ == "__main__":
-    save_sp500_tickers()
-    get_data_from_yahoo()
-    compile_data()
-    visualize_data()
-    process_data_for_labels('XOM')
+    #save_sp500_tickers()
+    #get_data_from_yahoo()
+    #compile_data()
+    #visualize_data()
+    #process_data_for_labels('XOM\n')
+    extract_featuresets('XOM\n')

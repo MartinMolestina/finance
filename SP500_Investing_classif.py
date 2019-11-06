@@ -214,12 +214,10 @@ def do_ml(ticker):
 
 # main calls each function
 if __name__ == "__main__":
-    #save_sp500_tickers()
-    #get_data_from_yahoo()
-    #compile_data()
-    #visualize_data()
-    #process_data_for_labels('XOM\n')
-    #extract_featuresets('XOM\n')
-    do_ml('XOM\n')
+    save_sp500_tickers()
+    get_data_from_yahoo()
+    compile_data()
+    visualize_data()
+    #do_ml('XOM\n')
     do_ml('AAPL\n')
-    do_ml('ABT\n')
+    #do_ml('ABT\n')

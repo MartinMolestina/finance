@@ -12,6 +12,9 @@ import os
 import pickle
 import requests
 from yahoofinancials import YahooFinancials
+from sklearn import svm, neighbors
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
 
 
 # Webscrapping S&P500 tickers from wikipedia
@@ -152,8 +155,8 @@ def process_data_for_labels(ticker):
 # Buy, Sell, Hold strategy
 def buy_sell_hold(*args):
     cols = [c for c in args]
-    buy_threshold = 0.022
-    sell_threshold = -0.02
+    buy_threshold = 0.028
+    sell_threshold = -0.025
     for col in cols:
         if col > buy_threshold:
             return 1
@@ -190,7 +193,24 @@ def extract_featuresets(ticker):
 
     return X,y,df
 
+# ML function
+def do_ml(ticker):
+    X, y, df = extract_featuresets(ticker)
 
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    clf = VotingClassifier([('lsvc', svm.LinearSVC()),
+                            ('knn', neighbors.KNeighborsClassifier()),
+                            ('rfor', RandomForestClassifier())])
+
+    clf.fit(X_train, y_train)
+    confidence = clf.score(X_test, y_test)
+    print('accuracy:', confidence)
+    predictions = clf.predict(X_test)
+    print('predicted class counts:', Counter(predictions))
+    print()
+    print()
+    return confidence
 
 # main calls each function
 if __name__ == "__main__":
@@ -199,4 +219,7 @@ if __name__ == "__main__":
     #compile_data()
     #visualize_data()
     #process_data_for_labels('XOM\n')
-    extract_featuresets('XOM\n')
+    #extract_featuresets('XOM\n')
+    do_ml('XOM\n')
+    do_ml('AAPL\n')
+    do_ml('ABT\n')

@@ -208,8 +208,6 @@ def do_ml(ticker):
     print('accuracy:', confidence)
     predictions = clf.predict(X_test)
     print('predicted class counts:', Counter(predictions))
-    print()
-    print()
     return confidence
 
 # main calls each function
